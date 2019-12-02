@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Tools
 {
@@ -36,13 +37,24 @@ namespace Tools
             return res;
         }
 
-        public static void PrintArray(IEnumerable<int> input){
+        public static void PrintArray(IEnumerable<int> input)
+        {
             Console.Write("Printing array:");
             foreach (var item in input)
             {
-                Console.Write(item.ToString()+",");
+                Console.Write(item.ToString() + ",");
             }
             Console.WriteLine("|END");
+        }
+
+        public static void ParallelFor(IEnumerable<string> input, Action<int> action)
+        {
+            Parallel.For(0, input.Count(), (i, state) => action(i));
+        }
+
+        public static void ParallelForEach(IEnumerable<string> input, Action<string> action)
+        {
+            Parallel.ForEach(input, (item, state) => action(item));
         }
     }
 }
