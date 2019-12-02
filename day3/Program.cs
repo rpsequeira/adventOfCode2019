@@ -26,6 +26,7 @@ namespace adventofcode
             Console.WriteLine("END");
         }
 
+
         private static int GetOptimalInputs(List<int> lines, int expected)
         {
             for (int i = 0; i <= 99; i++)
@@ -49,7 +50,6 @@ namespace adventofcode
         {
             return new List<int>(lines);
         }
-
         private static List<int> GetIntegers(List<int> lines)
         {
             var i = 0;
@@ -84,6 +84,7 @@ namespace adventofcode
             return lines;
         }
 
+
         private static int GetNextOpCode(List<int> lines, int currentPosition)
         {
             currentPosition += 4;
@@ -99,6 +100,47 @@ namespace adventofcode
                 }
                 return currentPosition;
             }
-        }    
+        }
+
+
+        private static int GetFuel(IEnumerable<string> lines)
+        {
+            int res = 0;
+            foreach (var item in lines)
+            {
+                var rocketFuel = Math.Floor(Decimal.Parse(item) / 3) - 2;
+                res += Convert.ToInt32(rocketFuel);
+            }
+            return res;
+        }
+        private static int GetFuel2(IEnumerable<string> lines)
+        {
+            int res = 0;
+            List<int> fuel = new List<int>();
+            foreach (var item in lines)
+            {
+                var rocketFuel = Math.Floor(Decimal.Parse(item) / 3) - 2;
+                res += Convert.ToInt32(rocketFuel);
+                fuel.Add(GetFuelForFuel(Convert.ToInt32(rocketFuel)));
+            }
+            return res + fuel.Sum();
+        }
+        private static int GetFuelForFuel(int fuel)
+        {
+            int res = 0;
+            decimal rocketFuel = fuel;
+            do
+            {
+                var o = (rocketFuel / 3) - 2;
+                rocketFuel = Math.Floor(o);
+                if (rocketFuel > 0)
+                {
+                    res += Convert.ToInt32(rocketFuel);
+                }
+            }
+            while (rocketFuel > 0);
+
+            return res;
+        }
     }
 }
