@@ -49,37 +49,54 @@ namespace Tools
 
         public static void ParallelFor(IEnumerable<string> input, Action<int> action)
         {
-            Parallel.For(0, input.Count(), (i, state) => action(i));
+            Parallel.For(0, input.Count(), new ParallelOptions { MaxDegreeOfParallelism = 4 }, (i, state) => action(i));
         }
 
         public static void ParallelForEach(IEnumerable<string> input, Action<string> action)
         {
-            Parallel.ForEach(input, (item, state) => action(item));
+            Parallel.ForEach(input, new ParallelOptions { MaxDegreeOfParallelism = 4 }, (item, state) => action(item));
+        }
+
+        public static void MeasureActionTime(string desc, Action action)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            action();
+            Console.WriteLine($"{desc} took {stopwatch.ElapsedMilliseconds} ms");
         }
     }
 
-    public class Point{
-        public int X { get; set; }
-        public int Y { get; set; }
-        
+    public struct Point
+    {
+        public int X { get { return _x; } }
+        private int _x;
+        public int Y { get { return _y; } }
+        private int _y;
         public Point(int x, int y)
         {
-            this.X = x;
-            this.Y = y;
+            this._x = x;
+            this._y = y;
         }
 
-        public override bool Equals(object obj){
-            if(obj is Point point){
-                return this.X == point.X && this.Y == point.Y;
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
             }
-            return false;
+            else
+            {
+                Point p = (Point)obj;
+                return (_x == p.X) && (_y == p.Y);
+            }
         }
 
-        public override int GetHashCode(){
-            return base.GetHashCode();
+        public override int GetHashCode()
+        {
+            return (_x << 2) ^ _y;
         }
 
-        public override string ToString(){
+        public override string ToString()
+        {
             return $"({this.X}, {this.Y})";
         }
     }
