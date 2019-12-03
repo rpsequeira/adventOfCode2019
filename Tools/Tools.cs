@@ -57,4 +57,30 @@ namespace Tools
             Parallel.ForEach(input, (item, state) => action(item));
         }
     }
+
+    public class Point{
+        public int X { get; set; }
+        public int Y { get; set; }
+        
+        public Point(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+
+        public override bool Equals(object obj){
+            if(obj is Point point){
+                return this.X == point.X && this.Y == point.Y;
+            }
+            return false;
+        }
+
+        public override int GetHashCode(){
+            return base.GetHashCode();
+        }
+
+        public override string ToString(){
+            return $"({this.X}, {this.Y})";
+        }
+    }
 }
