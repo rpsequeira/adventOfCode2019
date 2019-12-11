@@ -9,7 +9,7 @@ namespace adventofcode
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 3 of AoC");
+            Console.WriteLine("Day 6 of AoC");
             string input = args[0];
             Console.WriteLine($"Loading data from " + input + "...");
             var lines = Tools.Tools.ReadAllLines(input).ToList();

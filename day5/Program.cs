@@ -55,12 +55,12 @@ namespace adventofcode
             var i = 0;
             do
             {
-                int numberParameters = 0;
+                int nextPosition = i;
                 var modes = DecodeOpCode(lines[i], out int op);
                 switch (op)
                 {
                     case 1:
-                        numberParameters = 4;
+                        nextPosition = i + 4;
                         var v1Op1 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
                         var v2Op1 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
                         var targetPosOp1 = lines[i + 3];
@@ -71,7 +71,7 @@ namespace adventofcode
                         lines[targetPosOp1] = v1Op1 + v2Op1;
                         break;
                     case 2:
-                        numberParameters = 4;
+                        nextPosition = i + 4;
                         var v1Op2 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
                         var v2Op2 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
                         var targetPosOp2 = lines[i + 3];
@@ -82,17 +82,49 @@ namespace adventofcode
                         lines[targetPosOp2] = v1Op2 * v2Op2;
                         break;
                     case 3:
-                        numberParameters = 2;
+                        nextPosition = i + 2;
                         var pos1 = lines[i + 1];
                         lines[pos1] = input;
                         break;
                     case 4:
-                        numberParameters = 2;
+                        nextPosition = i + 2;
                         var outputPos = lines[i + 1];
                         Console.WriteLine($"Operation:{i}|Output:{lines[outputPos]}");
                         break;
+                    case 5:
+                        var v1Op5 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
+                        var v2Op5 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
+                        nextPosition = v1Op5 != 0 ? v2Op5 : i + 3;
+                        break;
+                    case 6:
+                        var v1Op6 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
+                        var v2Op6 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
+                        nextPosition = v1Op6 == 0 ? v2Op6 : i + 3;
+                        break;
+                    case 7:
+                        nextPosition = i + 4;
+                        var v1Op7 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
+                        var v2Op7 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
+                        var targetPosOp7 = lines[i + 3];
+                        if (targetPosOp7 > lines.Count())
+                        {
+                            break;
+                        }
+                        lines[targetPosOp7] = v1Op7 < v2Op7 ? 1 : 0;
+                        break;
+                    case 8:
+                        nextPosition = i + 4;
+                        var v1Op8 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
+                        var v2Op8 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
+                        var targetPosOp8 = lines[i + 3];
+                        if (targetPosOp8 > lines.Count())
+                        {
+                            break;
+                        }
+                        lines[targetPosOp8] = v1Op8 == v2Op8 ? 1 : 0;
+                        break;
                 }
-                i = GetNextOpCode(lines, i, numberParameters);
+                i = GetNextOpCode(lines, nextPosition);
             } while (i >= 0);
             return lines;
         }
@@ -125,20 +157,19 @@ namespace adventofcode
             return res;
         }
 
-        private static int GetNextOpCode(List<int> lines, int currentPosition, int nParameters)
+        private static int GetNextOpCode(List<int> lines, int nextPosition)
         {
-            currentPosition += nParameters;
-            if (lines[currentPosition] == 99)
+            if (lines[nextPosition] == 99)
             {
                 return -1;
             }
             else
             {
-                if (currentPosition > lines.Count())
+                if (nextPosition > lines.Count())
                 {
                     return -1;
                 }
-                return currentPosition;
+                return nextPosition;
             }
         }
     }
