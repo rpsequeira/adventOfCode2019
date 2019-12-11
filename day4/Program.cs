@@ -12,17 +12,15 @@ namespace adventofcode
             Console.WriteLine("Day 4 of AoC");
             var lines = "402328-864247".Split("-"); ;
             Console.WriteLine("STEP 1");
-            var res = GetPossiblePasswordsNumber(lines.First(), lines.Last());
-            var a = new[] { 7, 8, 8, 8, 9, 9 }.ToList();
-            var res2 = ValidatePassword(a);
+            var res = GetPossiblePasswordsNumber(lines.First(), lines.Last(), ValidatePassword);
             Console.WriteLine("Result: '" + res + "'");
-            Console.WriteLine("Result: '" + res2 + "'");
             Console.WriteLine("STEP 2");
-            //Console.WriteLine("Result: '" + res2 + "'");
+            var res2 = GetPossiblePasswordsNumber(lines.First(), lines.Last(), ValidatePasswordPart2);
+            Console.WriteLine("Result: '" + res2 + "'");
             Console.WriteLine("END");
         }
 
-        private static int GetPossiblePasswordsNumber(string start, string end)
+        private static int GetPossiblePasswordsNumber(string start, string end, Func<List<int>, bool> validator)
         {
             Console.WriteLine(start + " - " + end);
             List<int> first = start.Select(s => Int32.Parse(s.ToString())).ToList();
@@ -55,7 +53,7 @@ namespace adventofcode
                                     {
                                         continue;
                                     }
-                                    if (ValidatePassword(password))
+                                    if (validator(password))
                                     {
                                         res++;
                                     }
@@ -71,142 +69,48 @@ namespace adventofcode
 
         private static bool ValidatePassword(List<int> password)
         {
-            var repeatedDigits = 0;
+            Dictionary<int, int> pairs = new Dictionary<int, int>();
             var lastDigit = -1;
-            var pairs = 0;
             for (int i = 0; i < password.Count(); i++)
             {
-                repeatedDigits++;
                 if (password[i] < lastDigit)
                 {
                     return false;
                 }
-
-                if (password[i] != lastDigit && lastDigit > 0)
+                if (pairs.ContainsKey(password[i]))
                 {
-                    // if (pairs > 1 && repeatedDigits % 2 != 0)
-                    // {
-                    //     return false;
-                    // }
-                    // else
-                    // {
-                    if (repeatedDigits == 2)
-                    {
-                        pairs++;
-                        repeatedDigits = 1;
-                    }
-                    // }
+                    pairs[password[i]]++;
+                }
+                else
+                {
+                    pairs.Add(password[i], 1);
                 }
                 lastDigit = password[i];
             }
-            // if (repeatedDigits > 1 && repeatedDigits % 2 != 0)
-            // {
-            //     return false;
-            // }
-            if (pairs > 0)
-            {
-                return false;
-            }
-            return true;
+            return pairs.Any(p => p.Value >= 2);
         }
 
-
-
-        private static int GetShortestPath(List<string> lines)
+        private static bool ValidatePasswordPart2(List<int> password)
         {
-            var paths = new List<List<Tools.Point>>();
-            Tools.Tools.ParallelForEach(lines, (item) =>
+            Dictionary<int, int> pairs = new Dictionary<int, int>();
+            var lastDigit = -1;
+            for (int i = 0; i < password.Count(); i++)
             {
-                paths.Add(GetPath(item));
-            });
-            var distances = GetCrossingPointsSize(paths);
-            return distances.Min();
-        }
-
-        private static int GetOptimalPath(List<string> lines)
-        {
-            var paths = new List<List<Tools.Point>>();
-            Tools.Tools.ParallelForEach(lines, (item) =>
-            {
-                paths.Add(GetPath(item));
-            });
-            var crossingPoints = GetCrossingPoints(paths);
-            var distances = crossingPoints.Select(p => Math.Abs(p.X) + Math.Abs(p.Y));
-            return distances.Min();
-        }
-
-        private static List<Tools.Point> GetPath(string line)
-        {
-            var path = new List<Tools.Point>();
-            var instructions = line.Split(",");
-            Tools.Point refPoint = new Tools.Point(0, 0);
-            foreach (var item in instructions)
-            {
-                path.AddRange(GetPoints(item, refPoint));
-                refPoint = path.Last();
-            }
-            return path;
-        }
-
-        private static List<Tools.Point> GetPoints(string instruction, Tools.Point refPoint)
-        {
-            var direction = instruction[0];
-            var steps = Int32.Parse(instruction.Substring(1));
-            var res = new List<Tools.Point>();
-            switch (direction)
-            {
-                case 'R':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X + i, refPoint.Y);
-                        res.Add(newPoint);
-                    }
-                    break;
-                case 'L':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X - i, refPoint.Y);
-                        res.Add(newPoint);
-                    }
-                    break;
-                case 'U':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X, refPoint.Y + i);
-                        res.Add(newPoint);
-                    }
-                    break;
-                case 'D':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X, refPoint.Y - i);
-                        res.Add(newPoint);
-                    }
-                    break;
-            }
-            return res;
-        }
-
-        private static IEnumerable<Tools.Point> GetCrossingPoints(List<List<Tools.Point>> paths, int pathIndex = 0)
-        {
-            foreach (var item in paths.First())
-            {
-                if (paths.Last().Contains(item))
+                if (password[i] < lastDigit)
                 {
-                    yield return item;
+                    return false;
                 }
-            }
-        }
-
-        private static IEnumerable<int> GetCrossingPointsSize(List<List<Tools.Point>> paths, int pathIndex = 0)
-        {
-            foreach (var item in paths.First())
-            {
-                if (paths.Last().Contains(item))
+                if (pairs.ContainsKey(password[i]))
                 {
-                    yield return paths.First().IndexOf(item) + paths.Last().IndexOf(item) + 2;
+                    pairs[password[i]]++;
                 }
+                else
+                {
+                    pairs.Add(password[i], 1);
+                }
+                lastDigit = password[i];
             }
+            return pairs.Any(p => p.Value == 2);
         }
     }
 }

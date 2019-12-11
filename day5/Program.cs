@@ -9,113 +9,136 @@ namespace adventofcode
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Day 3 of AoC");
+            Console.WriteLine("Day 5 of AoC");
             string input = args[0];
             Console.WriteLine($"Loading data from " + input + "...");
-            var lines = Tools.Tools.ReadAllLines(input).ToList();
+            var lines = Tools.Tools.ReadAlllLinesAndSeparateComas(input).ToList();
             Console.WriteLine("STEP 1");
-            //var res = GetOptimalPath(lines);
-            //Console.WriteLine("Result: '" + res + "'");
+            var input1 = new List<int>(lines);
+            // Set initial state
+            Console.Write("Input:");
+            var inputParam = Int32.Parse(Console.ReadLine());
+            var res = GetIntegers(input1, inputParam);
+            Console.WriteLine("Result: '" + res[0] + "'");
             Console.WriteLine("STEP 2");
-            var res2 = GetShortestPath(lines);
-            Console.WriteLine("Result: '" + res2 + "'");
+            // int expected = 19690720;
+            // Console.WriteLine("Result: '" + GetOptimalInputs(lines, expected) + "'");
             Console.WriteLine("END");
         }
 
-        private static int GetShortestPath(List<string> lines)
+        // private static int GetOptimalInputs(List<int> lines, int expected)
+        // {
+        //     for (int i = 0; i <= 99; i++)
+        //     {
+        //         for (int j = 0; j <= 99; j++)
+        //         {
+        //             var input = GetFreshList(lines);
+        //             input[1] = i;
+        //             input[2] = j;
+        //             if (expected == GetIntegers(input)[0])
+        //             {
+        //                 return 100 * i + j;
+        //             }
+        //         }
+
+        //     }
+        //     return -1;
+        // }
+
+        private static List<int> GetFreshList(List<int> lines)
         {
-            var paths = new List<List<Tools.Point>>();
-            Tools.Tools.ParallelForEach(lines, (item) =>
-            {
-                paths.Add(GetPath(item));
-            });
-            var distances = GetCrossingPointsSize(paths);
-            return distances.Min();
+            return new List<int>(lines);
         }
 
-        private static int GetOptimalPath(List<string> lines)
+        private static List<int> GetIntegers(List<int> lines, int input)
         {
-            var paths = new List<List<Tools.Point>>();
-            Tools.Tools.ParallelForEach(lines, (item) =>
+            var i = 0;
+            do
             {
-                paths.Add(GetPath(item));
-            });
-            var crossingPoints = GetCrossingPoints(paths);
-            var distances = crossingPoints.Select(p => Math.Abs(p.X) + Math.Abs(p.Y));
-            return distances.Min();
+                int numberParameters = 0;
+                var modes = DecodeOpCode(lines[i], out int op);
+                switch (op)
+                {
+                    case 1:
+                        numberParameters = 4;
+                        var v1Op1 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
+                        var v2Op1 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
+                        var targetPosOp1 = lines[i + 3];
+                        if (targetPosOp1 > lines.Count())
+                        {
+                            break;
+                        }
+                        lines[targetPosOp1] = v1Op1 + v2Op1;
+                        break;
+                    case 2:
+                        numberParameters = 4;
+                        var v1Op2 = modes[0] == 0 ? lines[lines[i + 1]] : lines[i + 1];
+                        var v2Op2 = modes[1] == 0 ? lines[lines[i + 2]] : lines[i + 2];
+                        var targetPosOp2 = lines[i + 3];
+                        if (targetPosOp2 > lines.Count())
+                        {
+                            break;
+                        }
+                        lines[targetPosOp2] = v1Op2 * v2Op2;
+                        break;
+                    case 3:
+                        numberParameters = 2;
+                        var pos1 = lines[i + 1];
+                        lines[pos1] = input;
+                        break;
+                    case 4:
+                        numberParameters = 2;
+                        var outputPos = lines[i + 1];
+                        Console.WriteLine($"Operation:{i}|Output:{lines[outputPos]}");
+                        break;
+                }
+                i = GetNextOpCode(lines, i, numberParameters);
+            } while (i >= 0);
+            return lines;
         }
 
-        private static List<Tools.Point> GetPath(string line)
+        private static List<int> DecodeOpCode(int opCode, out int code)
         {
-            var path = new List<Tools.Point>();
-            var instructions = line.Split(",");
-            Tools.Point refPoint = new Tools.Point(0, 0);
-            foreach (var item in instructions)
+            var s = opCode.ToString().Reverse().ToList();
+            if (s.Count() == 1)
             {
-                path.AddRange(GetPoints(item, refPoint));
-                refPoint = path.Last();
+                code = opCode;
+                return new List<int>() { 0, 0, 0 };
             }
-            return path;
-        }
-
-        private static List<Tools.Point> GetPoints(string instruction, Tools.Point refPoint)
-        {
-            var direction = instruction[0];
-            var steps = Int32.Parse(instruction.Substring(1));
-            var res = new List<Tools.Point>();
-            switch (direction)
+            else
             {
-                case 'R':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X + i, refPoint.Y);
-                        res.Add(newPoint);
-                    }
-                    break;
-                case 'L':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X - i, refPoint.Y);
-                        res.Add(newPoint);
-                    }
-                    break;
-                case 'U':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X, refPoint.Y + i);
-                        res.Add(newPoint);
-                    }
-                    break;
-                case 'D':
-                    for (int i = 1; i <= steps; i++)
-                    {
-                        var newPoint = new Tools.Point(refPoint.X, refPoint.Y - i);
-                        res.Add(newPoint);
-                    }
-                    break;
+                var x = new string(new char[] { s[1], s[0] });
+                code = Int32.Parse(x);
+            }
+            var res = new List<int>();
+            for (int i = 2; i < 5; i++)
+            {
+                if (i < s.Count())
+                {
+                    res.Add(Int32.Parse(s[i].ToString()));
+                }
+                else
+                {
+                    res.Add(0);
+                }
             }
             return res;
         }
 
-        private static IEnumerable<Tools.Point> GetCrossingPoints(List<List<Tools.Point>> paths, int pathIndex = 0)
+        private static int GetNextOpCode(List<int> lines, int currentPosition, int nParameters)
         {
-            foreach (var item in paths.First())
+            currentPosition += nParameters;
+            if (lines[currentPosition] == 99)
             {
-                if (paths.Last().Contains(item))
-                {
-                    yield return item;
-                }
+                return -1;
             }
-        }
-
-        private static IEnumerable<int> GetCrossingPointsSize(List<List<Tools.Point>> paths, int pathIndex = 0)
-        {
-            foreach (var item in paths.First())
+            else
             {
-                if (paths.Last().Contains(item))
+                if (currentPosition > lines.Count())
                 {
-                    yield return paths.First().IndexOf(item) + paths.Last().IndexOf(item) + 2;
+                    return -1;
                 }
+                return currentPosition;
             }
         }
     }
